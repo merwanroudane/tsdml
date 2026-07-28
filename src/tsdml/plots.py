@@ -752,7 +752,12 @@ def plot_residuals(
     chi = np.asarray(residuals["outcome"], dtype=float)
     xi = np.asarray(residuals["treatment"], dtype=float)
     T = len(chi)
-    x = pd.to_datetime(index) if index is not None else np.arange(T)
+
+    # Plot against observation position, not calendar date. The estimation
+    # sample can have holes -- dropped rows, an excluded episode -- and joining
+    # across one with a straight line invents data that was never estimated on.
+    x = np.arange(T)
+    dates = pd.to_datetime(index) if index is not None else None
 
     ctx = use_journal_style(context=True) if style else _null_context()
     with ctx:
@@ -767,17 +772,42 @@ def plot_residuals(
             ax.set_ylabel(label)
 
             if n_blocks:
-                blocks = reverse_cf_folds(T, n_blocks)
-                for b in blocks.main_blocks[1:]:
-                    pos = x[b[0]] if index is not None else b[0]
-                    ax.axvline(pos, color="grey", linewidth=0.8, linestyle=":",
+                for b in reverse_cf_folds(T, n_blocks).main_blocks[1:]:
+                    ax.axvline(b[0], color="grey", linewidth=0.8, linestyle=":",
                                alpha=0.8)
 
-        axes[-1].set_xlabel("date" if index is not None else "t")
+            if dates is not None:
+                # shade any break in the calendar so the reader sees it
+                gaps = _calendar_gaps(dates)
+                for start, end in gaps:
+                    ax.axvspan(start - 0.5, start + 0.5, color=COLORS["rmse"],
+                               alpha=0.12, linewidth=0)
+
+        if dates is not None:
+            step = max(1, T // 8)
+            ticks = list(range(0, T, step))
+            axes[-1].set_xticks(ticks)
+            axes[-1].set_xticklabels([dates[i].strftime("%Y-%m") for i in ticks],
+                                     rotation=0)
+            axes[-1].set_xlabel("observation (date label)")
+        else:
+            axes[-1].set_xlabel("observation")
+
         if title:
             fig.suptitle(title)
 
     return save_figure(fig, save_path)
+
+
+def _calendar_gaps(dates: pd.DatetimeIndex):
+    """Positions where consecutive observations skip more than one period."""
+    if len(dates) < 3:
+        return []
+    deltas = np.diff(dates.values).astype("timedelta64[D]").astype(float)
+    typical = float(np.median(deltas))
+    if typical <= 0:
+        return []
+    return [(i, i + 1) for i, dt in enumerate(deltas) if dt > 1.75 * typical]
 
 
 # --------------------------------------------------------------------------- #

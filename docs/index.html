@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tsdml — Double Machine Learning for Time Series</title>
+<meta name="description" content="A Python package for Reverse Cross-Fitting DML, Goldilocks-zone tuning and DML local projections. Verified bit-for-bit against the paper's replication code. By Dr Merwan Roudane.">
+<meta name="author" content="Merwan Roudane">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230173B2'/><path d='M22 68 L38 40 L52 58 L66 28 L80 46' stroke='white' stroke-width='9' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+
+<style>
+/* ─────────────────────────  palette  ───────────────────────── */
+:root{
+  --paper:#FCFBF8;
+  --paper-2:#F5F1EA;
+  --card:#FFFFFF;
+  --ink:#16232E;
+  --ink-2:#43535F;
+  --ink-3:#7A8894;
+  --rule:#E6E0D6;
+  --rule-2:#F0EBE2;
+
+  --blue:#0173B2;
+  --blue-d:#065A8A;
+  --blue-l:#E7F1F8;
+  --verm:#D55E00;
+  --verm-l:#FBEDE3;
+  --teal:#029E73;
+  --teal-l:#E4F5EF;
+  --gold:#C08A2E;
+  --gold-l:#FBF2E0;
+  --plum:#8E5AA8;
+
+  --radius:16px;
+  --radius-s:10px;
+  --shadow:0 1px 2px rgba(22,35,46,.05), 0 8px 24px -12px rgba(22,35,46,.14);
+  --shadow-l:0 2px 6px rgba(22,35,46,.06), 0 22px 50px -24px rgba(22,35,46,.24);
+
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --maxw:1120px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:16.5px;line-height:1.68;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;height:auto;display:block}
+a{color:var(--blue-d);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.22;letter-spacing:-.012em;color:var(--ink);margin:0}
+code,kbd{font-family:var(--mono);font-size:.875em}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.narrow{max-width:790px}
+
+/* ─────────────────────────  nav  ───────────────────────── */
+nav{
+  position:sticky;top:0;z-index:60;
+  background:rgba(252,251,248,.86);backdrop-filter:saturate(180%) blur(14px);
+  border-bottom:1px solid var(--rule);
+}
+.nav-in{display:flex;align-items:center;gap:26px;height:60px;max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--serif);font-size:19px;font-weight:600;color:var(--ink);flex-shrink:0}
+.brand:hover{text-decoration:none}
+.brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--teal))}
+.nav-links{display:flex;gap:22px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{
+  font-size:14.5px;color:var(--ink-2);white-space:nowrap;padding:4px 0;
+  border-bottom:2px solid transparent;transition:color .16s,border-color .16s;
+}
+.nav-links a:hover,.nav-links a.on{color:var(--blue-d);border-color:var(--blue);text-decoration:none}
+.nav-cta{
+  flex-shrink:0;background:var(--ink);color:#fff;padding:7px 15px;border-radius:99px;
+  font-size:13.5px;font-weight:600;transition:transform .16s,background .16s;
+}
+.nav-cta:hover{background:var(--blue-d);text-decoration:none;transform:translateY(-1px)}
+@media(max-width:900px){.nav-links{display:none}}
+
+/* ─────────────────────────  hero  ───────────────────────── */
+header.hero{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(1100px 520px at 12% -8%, #DCEEF8 0%, transparent 62%),
+    radial-gradient(900px 460px at 88% 4%, #E2F4EC 0%, transparent 60%),
+    radial-gradient(760px 420px at 62% 96%, #FBF0E2 0%, transparent 62%),
+    linear-gradient(180deg,#FEFDFB 0%, var(--paper) 100%);
+  border-bottom:1px solid var(--rule);
+  padding:72px 0 64px;
+}
+header.hero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(var(--rule-2) 1px,transparent 1px),linear-gradient(90deg,var(--rule-2) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 40%,#000 20%,transparent 75%);
+  -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 40%,#000 20%,transparent 75%);
+}
+.hero-in{position:relative;z-index:1}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--rule);
+  color:var(--ink-2);font-size:13px;font-weight:600;letter-spacing:.03em;
+  padding:6px 14px;border-radius:99px;box-shadow:var(--shadow);margin-bottom:22px;
+}
+.eyebrow .pip{width:7px;height:7px;border-radius:50%;background:var(--teal)}
+h1.title{font-size:clamp(2.5rem,6vw,4.1rem);letter-spacing:-.03em;margin-bottom:14px}
+h1.title .grad{
+  background:linear-gradient(100deg,var(--blue) 0%,var(--teal) 52%,var(--gold) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.lede{font-size:clamp(1.08rem,2.1vw,1.31rem);color:var(--ink-2);max-width:660px;margin:0 0 12px}
+.cite{
+  font-family:var(--serif);font-size:15.5px;color:var(--ink-2);max-width:660px;
+  border-left:3px solid var(--blue);padding:6px 0 6px 16px;margin:22px 0 30px;
+}
+.cite em{color:var(--ink)}
+.btns{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:34px}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;padding:11px 20px;border-radius:11px;
+  font-size:15px;font-weight:600;border:1px solid transparent;transition:transform .16s,box-shadow .16s,background .16s;
+}
+.btn:hover{text-decoration:none;transform:translateY(-2px)}
+.btn-1{background:var(--ink);color:#fff;box-shadow:var(--shadow)}
+.btn-1:hover{background:var(--blue-d);box-shadow:var(--shadow-l)}
+.btn-2{background:#fff;color:var(--ink);border-color:var(--rule);box-shadow:var(--shadow)}
+.btn-2:hover{border-color:var(--blue);color:var(--blue-d)}
+.btn-3{background:var(--blue-l);color:var(--blue-d);border-color:#C9E2F1}
+.btn-3:hover{background:#DAEBF6}
+
+.install{
+  display:flex;align-items:center;gap:14px;background:var(--ink);color:#EAF2F7;
+  font-family:var(--mono);font-size:15px;padding:14px 18px;border-radius:12px;
+  max-width:400px;box-shadow:var(--shadow-l);
+}
+.install .pr{color:var(--teal);user-select:none}
+.install button{
+  margin-left:auto;background:rgba(255,255,255,.11);color:#EAF2F7;border:0;
+  font:inherit;font-size:12.5px;padding:5px 11px;border-radius:7px;cursor:pointer;transition:background .15s;
+}
+.install button:hover{background:rgba(255,255,255,.22)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:14px;margin-top:44px}
+.stat{background:#fff;border:1px solid var(--rule);border-radius:var(--radius-s);padding:16px 18px;box-shadow:var(--shadow)}
+.stat b{display:block;font-family:var(--serif);font-size:1.72rem;line-height:1.1;color:var(--blue-d)}
+.stat span{font-size:13px;color:var(--ink-3);letter-spacing:.01em}
+
+/* ─────────────────────────  sections  ───────────────────────── */
+section{padding:76px 0;border-bottom:1px solid var(--rule)}
+section.tint{background:linear-gradient(180deg,#FFFDFA 0%,var(--paper-2) 100%)}
+.sec-head{max-width:720px;margin-bottom:40px}
+.kicker{
+  font-size:12.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--verm);margin-bottom:11px;
+}
+.sec-head h2{font-size:clamp(1.75rem,3.5vw,2.45rem);margin-bottom:12px}
+.sec-head p{color:var(--ink-2);font-size:1.05rem;margin:0}
+
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:22px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:22px}
+
+.card{
+  background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);
+  padding:26px 26px 24px;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;
+}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-l)}
+.card h3{font-size:1.2rem;margin-bottom:9px}
+.card p{color:var(--ink-2);font-size:15px;margin:0 0 10px}
+.card p:last-child{margin-bottom:0}
+.badge{
+  display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  padding:4px 10px;border-radius:99px;margin-bottom:13px;
+}
+.b-blue{background:var(--blue-l);color:var(--blue-d)}
+.b-verm{background:var(--verm-l);color:#A8490B}
+.b-teal{background:var(--teal-l);color:#017253}
+.b-gold{background:var(--gold-l);color:#8A6115}
+
+/* ─────────────────────────  theory  ───────────────────────── */
+.eq{
+  background:#fff;border:1px solid var(--rule);border-left:3px solid var(--blue);
+  border-radius:var(--radius-s);padding:20px 24px;margin:22px 0;
+  font-family:var(--serif);font-size:1.11rem;text-align:center;overflow-x:auto;box-shadow:var(--shadow);
+}
+.eq .tag{float:right;font-family:var(--sans);font-size:12px;color:var(--ink-3);font-style:normal}
+.eq sub,.eq sup{font-size:.68em}
+.eq .op{color:var(--ink-3);padding:0 .28em}
+.hat{position:relative;display:inline-block;padding-top:.06em}
+.hat::after{content:"^";position:absolute;left:50%;top:-.60em;transform:translateX(-50%) scaleX(1.25);font-size:.78em;line-height:1;font-family:var(--serif);pointer-events:none}
+.note{
+  background:var(--gold-l);border:1px solid #EDD9AE;border-radius:var(--radius-s);
+  padding:16px 20px;margin:22px 0;font-size:15px;color:#6B4E12;
+}
+.note b{color:#4E390A}
+.note-blue{background:var(--blue-l);border-color:#C9E2F1;color:#0A4A6E}
+.note-blue b{color:#063D5C}
+
+.folds{
+  font-family:var(--mono);font-size:12.5px;line-height:1.5;background:#fff;
+  border:1px solid var(--rule);border-radius:var(--radius-s);padding:18px;overflow-x:auto;
+  box-shadow:var(--shadow);
+}
+.folds table{border-collapse:collapse;margin:0 auto}
+.folds td{width:66px;height:34px;text-align:center;border:1px solid #D9D2C6;font-weight:600;font-size:11.5px}
+.folds td.m{background:#D6837E;color:#fff}
+.folds td.a{background:#B9CE86}
+.folds td.o{background:#fff;color:var(--ink-3)}
+.folds td.lbl{border:0;background:transparent;text-align:right;padding-right:12px;color:var(--ink-2);font-family:var(--sans);width:auto;white-space:nowrap}
+.folds td.dir{border:0;background:transparent;text-align:left;padding-left:12px;color:var(--ink-3);font-family:var(--sans);white-space:nowrap;font-size:12px}
+
+/* ─────────────────────────  figures  ───────────────────────── */
+.fig{
+  background:#fff;border:1px solid var(--rule);border-radius:var(--radius);
+  overflow:hidden;box-shadow:var(--shadow);margin-bottom:26px;
+}
+.fig img{border-bottom:1px solid var(--rule-2);background:#fff}
+.fig figcaption{padding:16px 22px;font-size:14.5px;color:var(--ink-2)}
+.fig figcaption b{color:var(--ink);font-family:var(--serif);font-size:15.5px}
+
+/* ─────────────────────────  tables  ───────────────────────── */
+.tbl-wrap{
+  background:#fff;border:1px solid var(--rule);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;margin-bottom:26px;
+}
+.tbl-head{padding:18px 22px 4px}
+.tbl-head h3{font-size:1.12rem;margin-bottom:5px}
+.tbl-head p{font-size:14px;color:var(--ink-3);margin:0}
+.tbl-scroll{overflow-x:auto;padding:12px 6px 6px}
+table.data{border-collapse:collapse;width:100%;font-size:14.5px;font-variant-numeric:tabular-nums}
+table.data th{
+  font-family:var(--sans);font-size:12.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--ink-3);text-align:right;padding:9px 16px;border-bottom:2px solid var(--ink);white-space:nowrap;
+}
+table.data th:first-child,table.data td:first-child{text-align:left}
+table.data td{padding:8px 16px;border-bottom:1px solid var(--rule-2);text-align:right;white-space:nowrap}
+table.data tbody tr:last-child td{border-bottom:0}
+table.data tbody tr:hover{background:#FBFAF6}
+table.data td.neg{color:var(--verm)}
+table.data td.pos{color:var(--teal)}
+table.data td.hl{font-weight:700;color:var(--blue-d)}
+.tbl-note{padding:12px 22px 18px;font-size:13px;color:var(--ink-3);border-top:1px solid var(--rule-2);line-height:1.6}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700}
+.pill-rcf{background:var(--blue-l);color:var(--blue-d)}
+.pill-nlo{background:var(--verm-l);color:#A8490B}
+.pill-tie{background:var(--paper-2);color:var(--ink-3)}
+
+/* ─────────────────────────  code  ───────────────────────── */
+.code{
+  background:#12222E;border-radius:var(--radius);overflow:hidden;
+  box-shadow:var(--shadow-l);margin:20px 0;
+}
+.code-bar{
+  display:flex;align-items:center;gap:8px;padding:11px 16px;
+  background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.08);
+}
+.code-bar .lights{display:flex;gap:6px}
+.code-bar .lights i{width:11px;height:11px;border-radius:50%;display:block}
+.code-bar .lights i:nth-child(1){background:#E9695F}
+.code-bar .lights i:nth-child(2){background:#E4B34B}
+.code-bar .lights i:nth-child(3){background:#5FC26A}
+.code-bar span{font-family:var(--mono);font-size:12.5px;color:#8FA6B4;margin-left:6px}
+.code-bar button{
+  margin-left:auto;background:rgba(255,255,255,.09);color:#C9DAE4;border:0;
+  font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:6px;cursor:pointer;
+}
+.code-bar button:hover{background:rgba(255,255,255,.18)}
+.code pre{margin:0;padding:20px 22px;overflow-x:auto;font-family:var(--mono);font-size:13.6px;line-height:1.72;color:#DCE7ED}
+.k{color:#7FB7E0}.s{color:#9FD8A8}.n{color:#E3B778}.c{color:#68808F;font-style:italic}.f{color:#E8C976}.o2{color:#C8A2D8}
+
+.steps{counter-reset:s;list-style:none;padding:0;margin:0}
+.steps li{
+  counter-increment:s;position:relative;padding:0 0 26px 54px;
+  border-left:2px solid var(--rule);margin-left:16px;
+}
+.steps li:last-child{border-left-color:transparent;padding-bottom:0}
+.steps li::before{
+  content:counter(s);position:absolute;left:-17px;top:-3px;width:32px;height:32px;
+  border-radius:50%;background:#fff;border:2px solid var(--blue);color:var(--blue-d);
+  font-family:var(--serif);font-weight:700;font-size:15px;display:grid;place-items:center;
+}
+.steps h4{font-size:1.05rem;margin-bottom:5px}
+.steps p{margin:0;color:var(--ink-2);font-size:15px}
+
+/* ─────────────────────────  links  ───────────────────────── */
+.linkgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.link{
+  display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--rule);
+  border-radius:var(--radius-s);padding:17px 19px;box-shadow:var(--shadow);
+  transition:transform .18s,box-shadow .18s,border-color .18s;
+}
+.link:hover{transform:translateY(-2px);box-shadow:var(--shadow-l);border-color:var(--blue);text-decoration:none}
+.link .ic{
+  flex-shrink:0;width:38px;height:38px;border-radius:9px;display:grid;place-items:center;
+  font-size:19px;background:var(--blue-l);
+}
+.link strong{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
+.link small{color:var(--ink-3);font-size:13px;line-height:1.5;display:block}
+
+/* ─────────────────────────  author  ───────────────────────── */
+.author{
+  display:flex;gap:26px;align-items:center;flex-wrap:wrap;background:#fff;
+  border:1px solid var(--rule);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow-l);
+}
+.avatar{
+  width:82px;height:82px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--blue) 0%,var(--teal) 100%);
+  color:#fff;font-family:var(--serif);font-size:29px;font-weight:600;letter-spacing:.02em;
+  box-shadow:0 8px 22px -8px rgba(1,115,178,.6);
+}
+.author-txt{flex:1;min-width:240px}
+.author-txt h3{font-size:1.4rem;margin-bottom:3px}
+.author-txt .role{color:var(--ink-3);font-size:14.5px;margin-bottom:12px}
+.author-txt p{color:var(--ink-2);font-size:15px;margin:0 0 14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  font-size:13px;padding:5px 12px;border-radius:99px;background:var(--paper-2);
+  border:1px solid var(--rule);color:var(--ink-2);
+}
+.chip a{color:inherit}
+
+footer{padding:44px 0 56px;background:var(--paper-2);text-align:center}
+footer p{color:var(--ink-3);font-size:14px;margin:0 0 8px}
+footer a{color:var(--ink-2)}
+
+.hr-orn{display:flex;align-items:center;gap:14px;margin:44px 0;color:var(--rule)}
+.hr-orn::before,.hr-orn::after{content:"";flex:1;height:1px;background:var(--rule)}
+.hr-orn span{color:var(--ink-3);font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+
+@media(max-width:640px){
+  section{padding:56px 0}
+  .install{max-width:100%;font-size:13.5px}
+  .card{padding:22px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <a class="brand" href="#top"><span class="dot"></span>tsdml</a>
+    <div class="nav-links">
+      <a href="#method">Method</a>
+      <a href="#theory">Theory</a>
+      <a href="#figures">Figures</a>
+      <a href="#results">Results</a>
+      <a href="#start">Get started</a>
+      <a href="#docs">Docs</a>
+      <a href="#author">Author</a>
+    </div>
+    <a class="nav-cta" href="https://github.com/merwanroudane/tsdml/blob/main/docs/STEP_BY_STEP_GUIDE.md">Step-by-step guide →</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap hero-in">
+    <span class="eyebrow"><span class="pip"></span>Python package · v0.1.0 · MIT</span>
+
+    <h1 class="title">Double Machine Learning<br><span class="grad">for Time Series</span></h1>
+
+    <p class="lede">
+      Causal inference with many controls and few observations — Reverse Cross-Fitting,
+      Goldilocks-zone tuning and DML local projections, in one <code>pip install</code>.
+    </p>
+
+    <div class="cite">
+      Implements Ciganovic, D'Amario &amp; Tancioni (2026), <em>Double Machine Learning for
+      Time Series</em>, <em>The Econometrics Journal</em> ·
+      <a href="https://arxiv.org/abs/2603.10999">arXiv:2603.10999</a>
+    </div>
+
+    <div class="btns">
+      <a class="btn btn-1" href="https://github.com/merwanroudane/tsdml/blob/main/docs/STEP_BY_STEP_GUIDE.md">📘 Step-by-step guide</a>
+      <a class="btn btn-2" href="https://pypi.org/project/tsdml/">PyPI</a>
+      <a class="btn btn-2" href="https://github.com/merwanroudane/tsdml">GitHub</a>
+      <a class="btn btn-3" href="#results">See the results ↓</a>
+    </div>
+
+    <div class="install">
+      <span class="pr">$</span><span id="pipcmd">pip install tsdml</span>
+      <button onclick="copyTxt('pip install tsdml',this)">Copy</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b>78</b><span>tests, all passing</span></div>
+      <div class="stat"><b>46</b><span>public API names</span></div>
+      <div class="stat"><b>1e−15</b><span>max deviation from the<br>replication code</span></div>
+      <div class="stat"><b>37</b><span>series in the bundled<br>Italian dataset</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════  WHY / METHOD  ══════════════════ -->
+<section id="method">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">The problem</div>
+      <h2>Standard DML breaks on a time series</h2>
+      <p>
+        Double Machine Learning needs <em>randomised</em> cross-fitting. Randomising the
+        folds of a time series destroys the sequential structure that makes it a time
+        series. The existing repair deletes buffer blocks around every fold — expensive
+        when you have sixty quarters of data.
+      </p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <span class="badge b-blue">Contribution 1</span>
+        <h3>Reverse Cross-Fitting</h3>
+        <p>
+          Nuisance functions are trained on <strong>time-reversed</strong> auxiliary blocks —
+          licensed by the reversibility of stationary Gaussian processes — and
+          <strong>no buffer is deleted</strong> between the training and test samples.
+        </p>
+        <p>
+          At <code>K = 6</code> that leaves <strong>66.7%</strong> of the sample available for
+          nuisance estimation, against <strong>55.6%</strong> under neighbour deletion.
+        </p>
+      </div>
+
+      <div class="card">
+        <span class="badge b-verm">Contribution 2</span>
+        <h3>Goldilocks-zone tuning</h3>
+        <p>
+          The penalty that minimises <em>prediction</em> error is not the one that minimises
+          <em>bias in the causal score</em>. Over-shrink the policy equation and you attenuate
+          the signal you are trying to isolate.
+        </p>
+        <p>
+          The rule instead selects inside a locally <strong>stable</strong> region of the
+          validation-error profile — cutting small-sample bias by roughly a fifth in the
+          Monte Carlo below.
+        </p>
+      </div>
+    </div>
+
+    <div class="hr-orn"><span>and around them</span></div>
+
+    <div class="grid-3">
+      <div class="card">
+        <span class="badge b-teal">Dynamics</span>
+        <h3>DML local projections</h3>
+        <p>Horizon-specific impulse responses with automatic cumulation of differenced
+        outcomes, and policy residuals cached across horizons.</p>
+      </div>
+      <div class="card">
+        <span class="badge b-teal">Inference</span>
+        <h3>HAC, done properly</h3>
+        <p>Long-run variance of the <em>stacked</em> score sequence — Bartlett, QS, Parzen,
+        EWC — seven bandwidth rules, and fixed-<em>b</em> critical values.</p>
+      </div>
+      <div class="card">
+        <span class="badge b-gold">Honesty</span>
+        <h3>A test for the assumption</h3>
+        <p>No buffer means conditional stability has to hold. The package ships a
+        boundary-leakage test that tells you when it does not.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════  THEORY  ══════════════════ -->
+<section id="theory" class="tint">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Theory</div>
+      <h2>What the estimator actually does</h2>
+      <p>Enough to read the code and know what you are assuming.</p>
+    </div>
+
+    <div class="narrow">
+      <h3 style="font-size:1.3rem;margin-bottom:10px">1 · The model</h3>
+      <p style="color:var(--ink-2)">
+        A partially linear model with a scalar policy variable <em>d</em><sub>t</sub> and a
+        possibly high-dimensional control vector <em>X</em><sub>t</sub>:
+      </p>
+
+      <div class="eq">
+        <span class="tag">1.1 – 1.2</span>
+        y<sub>t</sub> <span class="op">=</span> θ<sub>0</sub>&thinsp;d<sub>t</sub>
+        <span class="op">+</span> g<sub>0</sub>(X<sub>t</sub>) <span class="op">+</span> ε<sub>t</sub>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        d<sub>t</sub> <span class="op">=</span> m<sub>0</sub>(X<sub>t</sub>)
+        <span class="op">+</span> ξ<sub>t</sub>
+      </div>
+
+      <p style="color:var(--ink-2)">
+        θ<sub>0</sub> is the target. Residualising both equations and regressing residual on
+        residual removes <em>g</em><sub>0</sub> and makes the moment condition insensitive to
+        first-order error in the nuisances — Neyman orthogonality. What remains is the
+        problem of estimating those nuisances without letting the test observations
+        contaminate the fit.
+      </p>
+
+      <h3 style="font-size:1.3rem;margin:34px 0 10px">2 · Reverse Cross-Fitting</h3>
+      <p style="color:var(--ink-2)">
+        Cut the sample into <em>K</em> adjacent blocks of length ⌊T/K⌋. For fold <em>k</em>,
+        the auxiliary sample is one side only — and nothing is deleted between it and the
+        main block:
+      </p>
+
+      <div class="eq">
+        B<sub>k</sub><sup>L</sup> <span class="op">=</span> ⋃<sub>i&lt;k</sub> B<sub>i</sub>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        B<sub>k</sub><sup>R</sup> <span class="op">=</span> ⋃<sub>i&gt;k</sub> B<sub>i</sub>
+      </div>
+
+      <div class="folds">
+        <table>
+          <tr><td class="lbl">fold 0</td><td class="m">MAIN</td><td class="a">aux</td><td class="a">aux</td><td class="a">aux</td><td class="a">aux</td><td class="dir">← train right, time <b>reversed</b></td></tr>
+          <tr><td class="lbl">fold 1</td><td class="o">—</td><td class="m">MAIN</td><td class="a">aux</td><td class="a">aux</td><td class="a">aux</td><td class="dir">← train right, time <b>reversed</b></td></tr>
+          <tr><td class="lbl">fold 2</td><td class="a">aux</td><td class="a">aux</td><td class="m">MAIN</td><td class="a">aux</td><td class="a">aux</td><td class="dir">↔ both sides, averaged (odd K)</td></tr>
+          <tr><td class="lbl">fold 3</td><td class="a">aux</td><td class="a">aux</td><td class="a">aux</td><td class="m">MAIN</td><td class="o">—</td><td class="dir">→ train left, forward</td></tr>
+          <tr><td class="lbl">fold 4</td><td class="a">aux</td><td class="a">aux</td><td class="a">aux</td><td class="a">aux</td><td class="m">MAIN</td><td class="dir">→ train left, forward</td></tr>
+        </table>
+      </div>
+
+      <p style="color:var(--ink-2);margin-top:20px">
+        The fold estimate is the residual-on-residual OLS slope inside <em>B</em><sub>k</sub>,
+        and the estimator is their average:
+      </p>
+
+      <div class="eq">
+        <span class="tag">2.5</span>
+        <span class="hat">θ</span> <span class="op">=</span> <sup>1</sup>⁄<sub>K</sub>
+        ∑<sub>k=1</sub><sup>K</sup> <span class="hat">θ</span><sub>k</sub>
+        <span class="op">,</span>&nbsp;
+        <span class="hat">θ</span><sub>k</sub> <span class="op">=</span> arg min<sub>θ</sub>
+        ∑<sub>t∈B<sub>k</sub></sub> ( <span class="hat">χ</span><sub>t,k</sub> − θ <span class="hat">ξ</span><sub>t,k</sub> )²
+      </div>
+
+      <div class="note note-blue">
+        <b>Two separate ingredients, often confused.</b>
+        <em>Time reversibility</em> is what licenses training on reversed blocks: a stationary
+        Gaussian process has the same finite-dimensional distributions read backwards, so the
+        reversed fit targets the same population function. <em>Conditional stability</em> is what
+        licenses dropping the buffer. Neither implies the other, and the paper is explicit that
+        they should be assessed separately.
+      </div>
+
+      <h3 style="font-size:1.3rem;margin:34px 0 10px">3 · Conditional stability</h3>
+      <p style="color:var(--ink-2)">
+        Because the auxiliary blocks sit flush against the main block, validity requires that
+        — after conditioning on <em>X</em><sub>t</sub> — the training data carry no information
+        about the main-block innovations:
+      </p>
+
+      <div class="eq">
+        <span class="tag">Assumption 2.4</span>
+        𝔼[ ξ<sub>t</sub> | X<sub>t</sub>, 𝓕<sub>aux,k</sub> ] <span class="op">=</span> 0
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        𝔼[ ε<sub>t</sub> | X<sub>t</sub>, 𝓕<sub>aux,k</sub> ] <span class="op">=</span> 0
+      </div>
+
+      <p style="color:var(--ink-2)">
+        This is the time-series analogue of no data leakage. It holds broadly for stationary
+        linear processes when <em>X</em><sub>t</sub> absorbs the predictable component, and it
+        fails under omitted persistent states, residual serial dependence after conditioning,
+        or contemporaneously endogenous regimes. Under it, together with the usual
+        <em>o<sub>p</sub></em>(T<sup>−1/4</sup>) nuisance rate:
+      </p>
+
+      <div class="eq">
+        <span class="tag">Theorem 2.1</span>
+        √T ( <span class="hat">θ</span> − θ<sub>0</sub> )
+        &nbsp;⇒&nbsp; 𝓝( 0 , A<sup>−1</sup> Σ A<sup>−1⊤</sup> )
+        <span class="op">,</span>&nbsp;
+        Σ <span class="op">=</span> ∑<sub>h=−∞</sub><sup>∞</sup> Γ(h)
+      </div>
+
+      <p style="color:var(--ink-2)">
+        Σ is the long-run variance of the <strong>stacked, time-ordered</strong> score
+        sequence — not an average of fold-wise variances — so dependence across main-block
+        boundaries is picked up. <code>tsdml</code> computes it that way.
+      </p>
+
+      <h3 style="font-size:1.3rem;margin:34px 0 10px">4 · The Goldilocks zone</h3>
+      <p style="color:var(--ink-2)">
+        Over an ordered penalty grid Λ, let 𝓡(λ<sub>i</sub>) be the validation RMSE on a block
+        carved out of the <em>auxiliary</em> sample. For each window 𝓦<sub>j</sub> of
+        <em>S</em> consecutive grid points:
+      </p>
+
+      <div class="eq">
+        <span class="tag">3.9 – 3.12</span>
+        𝓢<sub>j</sub> <span class="op">=</span> Ṽ<sub>j</sub> <span class="op">+</span> 𝓡̃<sub>j</sub>
+        <span class="op">,</span>&nbsp;
+        j⋆ <span class="op">=</span> arg min<sub>j</sub> 𝓢<sub>j</sub>
+        <span class="op">,</span>&nbsp;
+        λ⋆ <span class="op">=</span> arg min<sub>λ<sub>i</sub> ∈ 𝓦<sub>j⋆</sub></sub> 𝓡(λ<sub>i</sub>)
+      </div>
+
+      <p style="color:var(--ink-2)">
+        Ṽ and 𝓡̃ are the min–max normalised within-window variance and mean. Pick the most
+        stable good window, then the best point inside it. Benchmark <em>S</em> = 3. The main
+        block is never used for tuning or fitting, so every selected object stays measurable
+        with respect to 𝓕<sub>aux,k</sub> and the proof survives.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════  FIGURES  ══════════════════ -->
+<section id="figures">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Output</div>
+      <h2>Figures, ready for submission</h2>
+      <p>
+        Every plot below was produced by <code>tsdml</code> on the bundled data with the
+        package defaults — serif type, trimmed spines, a colourblind-safe palette and
+        editable PDF text.
+      </p>
+    </div>
+
+    <figure class="fig">
+      <img src="img/figure2.png" alt="Five-panel cumulative impulse responses to a 50 basis-point rise in the Tier 1 capital ratio">
+      <figcaption>
+        <b>Cumulative responses to a 50bp rise in the Tier 1 capital ratio.</b>
+        Italian data, RCF-DML local projections with Goldilocks-tuned Lasso, K = 6, nested
+        90% and 95% HAC bands. Spreads rise on impact, lending contracts, and GDP falls by
+        almost 0.15 percent two quarters out before recovering — the paper's Figure 2.
+        <br><code>plot_irf_panel(...)</code>
+      </figcaption>
+    </figure>
+
+    <div class="grid-2">
+      <figure class="fig">
+        <img src="img/figure1_blocks.png" alt="Reverse cross-fitting fold diagram for K equals five">
+        <figcaption>
+          <b>The Reverse Cross-Fitting scheme.</b> Red is the main block, green the auxiliary
+          sample, white unused by that fold; arrows give the direction of estimation. No buffer
+          anywhere. <br><code>plot_block_structure(K=5)</code>
+        </figcaption>
+      </figure>
+
+      <figure class="fig">
+        <img src="img/goldilocks_profile.png" alt="Validation RMSE profile with the selected Goldilocks window highlighted">
+        <figcaption>
+          <b>Stability-based tuning in one picture.</b> The shaded band is the selected window,
+          the star is λ⋆, and the grey triangle is the plain RMSE minimiser — here at the grid
+          edge. <br><code>plot_goldilocks_profile(...)</code>
+        </figcaption>
+      </figure>
+
+      <figure class="fig">
+        <img src="img/sample_use.png" alt="Sample use of reverse cross-fitting against neighbours-left-out across K">
+        <figcaption>
+          <b>Why the design matters at moderate K.</b> RCF trains on more of the sample than
+          neighbour deletion for K = 3…9, they tie at 11, and NLO wins from 12. Short
+          macro samples live on the left. <br><code>plot_sample_use(...)</code>
+        </figcaption>
+      </figure>
+
+      <figure class="fig">
+        <img src="img/tuning_comparison.png" alt="GDP impulse response under Goldilocks tuning versus RMSE tuning">
+        <figcaption>
+          <b>The tuning rule moves the answer.</b> RMSE-based calibration over-denoises the
+          series and flattens the recovery; the Goldilocks path returns to zero by h = 7.
+          <br><code>plot_irf_comparison(...)</code>
+        </figcaption>
+      </figure>
+    </div>
+
+    <figure class="fig">
+      <img src="img/residuals.png" alt="Stage-one out-of-sample residuals with fold boundaries and a calendar break marked">
+      <figcaption>
+        <b>Stage-one residuals, with the fold boundaries dotted.</b> The grey band marks a
+        break in the calendar: the source dataset excludes 2020–2021, so a single 2022Q1
+        observation follows 2019Q4. <code>tsdml</code> warns you when the retained sample is
+        not contiguous, because lags spanning a break are not adjacent periods.
+        <br><code>plot_residuals(...)</code>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ══════════════════  RESULTS  ══════════════════ -->
+<section id="results" class="tint">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Results</div>
+      <h2>Real numbers, reproducible today</h2>
+      <p>
+        Everything in this section comes from running the package on the bundled dataset.
+        Reproduce it with
+        <a href="https://github.com/merwanroudane/tsdml/blob/main/examples/02_empirical_replication.py"><code>examples/02_empirical_replication.py</code></a>.
+      </p>
+    </div>
+
+    <div class="tbl-wrap">
+      <div class="tbl-head">
+        <h3>Cumulative impulse responses to a 50bp capital shock</h3>
+        <p>Italy, 2006Q4–2022Q1 · RCF-DML local projections · Goldilocks-tuned Lasso · K = 6</p>
+      </div>
+      <div class="tbl-scroll">
+        <table class="data">
+          <thead><tr>
+            <th>h</th><th>Tier 1 capital</th><th>Risk-weighted assets</th>
+            <th>PNFC spread (bp)</th><th>PNFC lending</th><th>GDP</th>
+          </tr></thead>
+          <tbody>
+            <tr><td>0</td><td class="pos">0.3668</td><td class="neg">−0.1332</td><td class="pos">1.0455</td><td class="pos">0.0398</td><td class="neg">−0.0360</td></tr>
+            <tr><td>1</td><td class="pos">0.3531</td><td class="neg">−0.3036</td><td class="pos">1.1338</td><td class="neg">−0.0396</td><td class="neg">−0.0995</td></tr>
+            <tr><td>2</td><td class="pos">0.3519</td><td class="neg">−0.2096</td><td class="pos">1.0232</td><td class="neg">−0.1586</td><td class="neg hl">−0.1438</td></tr>
+            <tr><td>3</td><td class="pos">0.4959</td><td class="neg">−0.0862</td><td class="pos">0.8524</td><td class="neg">−0.2199</td><td class="neg">−0.1180</td></tr>
+            <tr><td>4</td><td class="pos">0.3830</td><td class="pos">0.0787</td><td class="pos">0.4969</td><td class="neg">−0.2236</td><td class="neg">−0.1049</td></tr>
+            <tr><td>5</td><td class="pos">0.4265</td><td class="pos">0.2338</td><td class="neg">−0.2257</td><td class="neg hl">−0.3632</td><td class="neg">−0.0756</td></tr>
+            <tr><td>6</td><td class="pos">0.6223</td><td class="pos">0.2312</td><td class="pos">0.0845</td><td class="neg">−0.3590</td><td class="neg">−0.0339</td></tr>
+            <tr><td>7</td><td class="pos">0.6494</td><td class="pos">0.2624</td><td class="pos">0.3076</td><td class="neg">−0.2904</td><td class="pos">0.0224</td></tr>
+            <tr><td>8</td><td class="pos">0.6586</td><td class="pos">0.3907</td><td class="pos">0.3067</td><td class="neg">−0.2504</td><td class="pos">0.0559</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tbl-note">
+        Percentage change except the spread, in basis points. Normalised so the capital ratio
+        rises by exactly 50bp on impact. GDP troughs at −0.14% after two quarters; corporate
+        lending troughs at −0.36% after five. These match the published Figure 2 to every
+        digit shown.
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="tbl-wrap">
+        <div class="tbl-head">
+          <h3>Specifications side by side</h3>
+          <p>Impact effect on GDP · same data, same folds, same grid</p>
+        </div>
+        <div class="tbl-scroll">
+          <table class="data">
+            <thead><tr><th></th><th>RCF · Goldilocks</th><th>RCF · RMSE</th><th>NLO · RMSE</th></tr></thead>
+            <tbody>
+              <tr><td><span class="hat">θ</span></td><td>−0.5729</td><td>−0.6531</td><td>−0.5459</td></tr>
+              <tr><td>Std. error</td><td>(0.4811)</td><td>(0.6279)</td><td>(0.4305)</td></tr>
+              <tr><td>t-statistic</td><td>1.191</td><td>1.040</td><td>1.268</td></tr>
+              <tr><td>p-value</td><td>0.2391</td><td>0.3030</td><td>0.2104</td></tr>
+              <tr><td>Folds K</td><td>6</td><td>6</td><td>6</td></tr>
+              <tr><td>Sample use</td><td class="hl">0.667</td><td class="hl">0.667</td><td>0.556</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tbl-note">
+          <code>estimation_table({...})</code>. Predictive tuning inflates the standard error by
+          30% here; neighbour deletion gives up a ninth of the sample.
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <div class="tbl-head">
+          <h3>Sample use across K</h3>
+          <p>Share of observations available for nuisance estimation</p>
+        </div>
+        <div class="tbl-scroll">
+          <table class="data">
+            <thead><tr><th>K</th><th>u<sub>RCF</sub></th><th>u<sub>NLO</sub></th><th>Winner</th></tr></thead>
+            <tbody>
+              <tr><td>3</td><td>0.6667</td><td>0.2222</td><td><span class="pill pill-rcf">RCF</span></td></tr>
+              <tr><td>5</td><td>0.7200</td><td>0.4800</td><td><span class="pill pill-rcf">RCF</span></td></tr>
+              <tr><td>6</td><td>0.6667</td><td>0.5556</td><td><span class="pill pill-rcf">RCF</span></td></tr>
+              <tr><td>9</td><td>0.7407</td><td>0.6914</td><td><span class="pill pill-rcf">RCF</span></td></tr>
+              <tr><td>10</td><td>0.7000</td><td>0.7200</td><td><span class="pill pill-nlo">NLO</span></td></tr>
+              <tr><td>11</td><td>0.7438</td><td>0.7438</td><td><span class="pill pill-tie">tie</span></td></tr>
+              <tr><td>12</td><td>0.7083</td><td>0.7639</td><td><span class="pill pill-nlo">NLO</span></td></tr>
+              <tr><td>15</td><td>0.7467</td><td>0.8089</td><td><span class="pill pill-nlo">NLO</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tbl-note">
+          <code>sample_use_table(...)</code>. RCF is <em>not</em> uniformly better — it is the
+          right tool in the moderate-K range where short samples force you.
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="tbl-wrap">
+        <div class="tbl-head">
+          <h3>Penalties chosen per fold</h3>
+          <p>GDP equation · Goldilocks zone · 100-point grid on [10⁻⁶, 0.1]</p>
+        </div>
+        <div class="tbl-scroll">
+          <table class="data">
+            <thead><tr><th>Fold</th><th>n train</th><th>n validate</th><th>Outcome α</th><th>Policy α</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td>36</td><td>9</td><td>0.10000</td><td>0.10000</td></tr>
+              <tr><td>1</td><td>27</td><td>9</td><td>0.10000</td><td>0.10000</td></tr>
+              <tr><td>2</td><td>18</td><td>9</td><td>0.10000</td><td>0.10000</td></tr>
+              <tr><td>3</td><td>18</td><td>9</td><td>0.00101</td><td>0.08889</td></tr>
+              <tr><td>4</td><td>27</td><td>9</td><td>0.01919</td><td>0.07475</td></tr>
+              <tr><td>5</td><td>36</td><td>9</td><td>0.10000</td><td>0.00707</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tbl-note">
+          <code>calibration_table(cal)</code>. Fold-specific by design. Several values sit at the
+          grid ceiling — on real work that is a signal to widen the grid, not a result.
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <div class="tbl-head">
+          <h3>Conditional stability check</h3>
+          <p>Do adjacent blocks predict the main-block residuals?</p>
+        </div>
+        <div class="tbl-scroll">
+          <table class="data">
+            <thead><tr><th>Test</th><th>F</th><th>p-value</th><th>n</th><th>df</th></tr></thead>
+            <tbody>
+              <tr><td>pooled, policy residual</td><td>0.6415</td><td class="hl">0.6411</td><td>20</td><td>4</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tbl-note">
+          <code>diagnose(model)["leakage_policy"]</code>. No evidence of leakage across the fold
+          boundaries here, so dropping the buffer is defensible on this data. On a design built
+          to violate the assumption the same test fires on 29 draws out of 40.
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>Monte Carlo, T = 60 and p = 78 controls.</b> Over 60 replications of the paper's
+      recursive SVAR in its correctly specified ordering:
+      RCF + Goldilocks gives <b>|bias| 8.0%</b> and 85% coverage;
+      RCF + RMSE gives 10.1% and 83%;
+      NLO + RMSE gives 11.6% and 78%.
+      Stability-based tuning cuts bias by a fifth, the cross-fitting design by a further
+      eighth — the ordering the paper reports over 10,000 replications.
+      Reproduce with <a href="https://github.com/merwanroudane/tsdml/blob/main/examples/03_tuning_and_design_comparison.py"><code>examples/03</code></a>.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════  GET STARTED  ══════════════════ -->
+<section id="start">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Get started</div>
+      <h2>Five steps, about sixty lines</h2>
+      <p>Every analysis with this package has the same shape.</p>
+    </div>
+
+    <div class="grid-2" style="align-items:start">
+      <ol class="steps">
+        <li>
+          <h4>Shape your data</h4>
+          <p>Time-ordered <code>X</code>, <code>y</code>, <code>d</code>. Rows must be
+          consecutive periods — the fold structure is positional, and nothing can check it
+          for you.</p>
+        </li>
+        <li>
+          <h4>Choose K</h4>
+          <p>Six unless you have a reason. Bigger K means better nuisances and noisier fold
+          estimates.</p>
+        </li>
+        <li>
+          <h4>Tune per fold</h4>
+          <p><code>Calibrator</code> carves a validation block out of the auxiliary sample —
+          never the main block — and applies the Goldilocks rule.</p>
+        </li>
+        <li>
+          <h4>Estimate</h4>
+          <p><code>ReverseCrossFitting</code> refits the selected learners on each auxiliary
+          sample, residualises, and averages the fold slopes.</p>
+        </li>
+        <li>
+          <h4>Test what you assumed</h4>
+          <p><code>diagnose()</code> checks conditional stability. If it fires: more lags
+          first, buffered folds second.</p>
+        </li>
+      </ol>
+
+      <div>
+        <div class="code">
+          <div class="code-bar">
+            <span class="lights"><i></i><i></i><i></i></span>
+            <span>quickstart.py</span>
+            <button onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> sklearn.linear_model <span class="k">import</span> Lasso
+<span class="k">from</span> tsdml <span class="k">import</span> Calibrator, ReverseCrossFitting, diagnose
+
+<span class="c"># 1. time-ordered arrays</span>
+X, y, d = my_controls, my_outcome, my_policy
+
+grid = {<span class="s">"alpha"</span>: np.linspace(<span class="n">1e-6</span>, <span class="n">0.4</span>, <span class="n">100</span>),
+        <span class="s">"max_iter"</span>: [<span class="n">100_000</span>]}
+
+<span class="c"># 2-3. tune the two nuisances, fold by fold</span>
+cal = <span class="f">Calibrator</span>(metric=<span class="s">"goldilocks_zone"</span>, n_blocks=<span class="n">6</span>)
+cal.<span class="f">calibrate</span>(
+    X, y, d,
+    outcome_learner_class=Lasso,   outcome_param_grid=grid,
+    treatment_learner_class=Lasso, treatment_param_grid=grid,
+)
+
+<span class="c"># 4. cross-fit and estimate</span>
+model = <span class="f">ReverseCrossFitting</span>(
+    n_blocks=<span class="n">6</span>,
+    block_specific_learners=cal.block_specific_learners_,
+).<span class="f">fit</span>(X, y, d)
+
+model.<span class="f">summary</span>()
+
+<span class="c"># 5. test the assumption you are relying on</span>
+checks = <span class="f">diagnose</span>(model)
+<span class="f">print</span>(checks[<span class="s">"leakage_policy"</span>])</code></pre>
+        </div>
+
+        <div class="code">
+          <div class="code-bar">
+            <span class="lights"><i></i><i></i><i></i></span>
+            <span>console</span>
+          </div>
+<pre><code><span class="c">========================================================</span>
+Reverse Cross-Fitting DML  --  partially linear model
+<span class="c">========================================================</span>
+observations         : <span class="n">200</span>
+folds (K)            : <span class="n">6</span>   block size <span class="n">33</span>
+stage-2 method       : block
+HAC                  : bartlett (rule <span class="s">'small'</span>)
+<span class="c">--------------------------------------------------------</span>
+              coef     std err        t     P&gt;|t|
+theta     <span class="n">1.367399</span>    <span class="n">0.083104</span>   <span class="n">16.450</span>    <span class="n">0.0000</span> ***
+95% CI: [<span class="n">1.204518</span>, <span class="n">1.530280</span>]
+fold estimates: [<span class="n">1.08</span>, <span class="n">1.04</span>, <span class="n">1.64</span>, <span class="n">1.46</span>, <span class="n">1.35</span>, <span class="n">1.63</span>]
+<span class="c">========================================================</span></code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:30px">
+      <b>The one rule that matters.</b> Rows must be consecutive time periods, in order. The
+      block structure is positional: shuffle <code>X</code> and the estimator still returns a
+      number, and the number is meaningless. Sort once, at the top of your script.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════  DOCS  ══════════════════ -->
+<section id="docs" class="tint">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Documentation</div>
+      <h2>Everything, linked</h2>
+      <p>
+        The step-by-step guide is the place to start: thirteen steps, every argument
+        explained, with a troubleshooting section at the end.
+      </p>
+    </div>
+
+    <div class="linkgrid">
+      <a class="link" href="https://github.com/merwanroudane/tsdml/blob/main/docs/STEP_BY_STEP_GUIDE.md">
+        <span class="ic">📘</span>
+        <span><strong>Step-by-step guide</strong><small>The full tutorial — data → K → tuning → estimation → diagnostics → IRFs → figures → tables → robustness</small></span>
+      </a>
+      <a class="link" href="https://pypi.org/project/tsdml/">
+        <span class="ic">📦</span>
+        <span><strong>PyPI package</strong><small>pip install tsdml · version 0.1.0</small></span>
+      </a>
+      <a class="link" href="https://github.com/merwanroudane/tsdml">
+        <span class="ic">🗂️</span>
+        <span><strong>Source on GitHub</strong><small>MIT licensed · 78 tests · issues and pull requests welcome</small></span>
+      </a>
+      <a class="link" href="https://github.com/merwanroudane/tsdml#readme">
+        <span class="ic">📖</span>
+        <span><strong>README</strong><small>Full user guide: API, HAC rules, choosing K, known limits</small></span>
+      </a>
+      <a class="link" href="https://github.com/merwanroudane/tsdml/blob/main/examples/01_quickstart.py">
+        <span class="ic">⚡</span>
+        <span><strong>Example 1 — quickstart</strong><small>The five-step workflow, plus the stability check firing and not firing</small></span>
+      </a>
+      <a class="link" href="https://github.com/merwanroudane/tsdml/blob/main/examples/02_empirical_replication.py">
+        <span class="ic">🏛️</span>
+        <span><strong>Example 2 — replication</strong><small>The paper's Section 5 application end to end, figures and tables included</small></span>
+      </a>
+      <a class="link" href="https://github.com/merwanroudane/tsdml/blob/main/examples/03_tuning_and_design_comparison.py">
+        <span class="ic">🎲</span>
+        <span><strong>Example 3 — Monte Carlo</strong><small>Goldilocks vs RMSE, RCF vs NLO, with bias and coverage</small></span>
+      </a>
+      <a class="link" href="https://arxiv.org/abs/2603.10999">
+        <span class="ic">📄</span>
+        <span><strong>The paper</strong><small>Ciganovic, D'Amario &amp; Tancioni (2026), The Econometrics Journal</small></span>
+      </a>
+      <a class="link" href="https://github.com/merwanroudane/tsdml/blob/main/CHANGELOG.md">
+        <span class="ic">🗒️</span>
+        <span><strong>Changelog</strong><small>What is in each release</small></span>
+      </a>
+      <a class="link" href="https://github.com/merwanroudane/tsdml/blob/main/src/tsdml/data/SOURCES.md">
+        <span class="ic">🇮🇹</span>
+        <span><strong>Data sources</strong><small>Provenance of the bundled Italian dataset, 2005Q2–2024Q4</small></span>
+      </a>
+      <a class="link" href="https://github.com/merwanroudane/tsdml/blob/main/tests/test_paper_replication.py">
+        <span class="ic">✅</span>
+        <span><strong>Replication tests</strong><small>Regression tests pinning the published numbers</small></span>
+      </a>
+      <a class="link" href="https://github.com/merwanroudane/tsdml/issues">
+        <span class="ic">💬</span>
+        <span><strong>Issues</strong><small>Questions, bugs, feature requests</small></span>
+      </a>
+    </div>
+
+    <div class="hr-orn"><span>verified against the source</span></div>
+
+    <div class="tbl-wrap">
+      <div class="tbl-head">
+        <h3>Fidelity to the authors' replication code</h3>
+        <p>Checked end to end on the paper's own data and specification</p>
+      </div>
+      <div class="tbl-scroll">
+        <table class="data">
+          <thead><tr><th>Checked</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>X, y, policy, leads from the data pipeline</td><td class="pos">identical</td></tr>
+            <tr><td>Estimation index — dates and length</td><td class="pos">identical</td></tr>
+            <tr><td>Stage-one residuals, both equations</td><td class="pos">identical</td></tr>
+            <tr><td><span class="hat">θ</span> and standard error, fixed-penalty RCF</td><td class="pos">identical to 1e−15</td></tr>
+            <tr><td>Goldilocks penalties, 6 folds × 2 equations</td><td class="pos">identical</td></tr>
+            <tr><td>Impulse responses, 5 outcomes × 9 horizons × 2 bands</td><td class="pos">identical</td></tr>
+            <tr><td>Scaled Figure 2 responses</td><td class="pos">identical</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tbl-note">
+        Design choices inherited deliberately, because changing them would change published
+        numbers: the ⌊T/K⌋ truncation of a final partial block, block-level stage-two
+        regressions fitted without HAC before the fold average, the T − K denominator in the
+        autocovariance estimator, and the horizon-specific lag h + 1 in local projections.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════  AUTHOR  ══════════════════ -->
+<section id="author">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Author</div>
+      <h2>Who built this</h2>
+    </div>
+
+    <div class="author">
+      <div class="avatar">MR</div>
+      <div class="author-txt">
+        <h3>Dr Merwan Roudane</h3>
+        <div class="role">Econometrics · statistical software · applied macro-finance</div>
+        <p>
+          Author and maintainer of <code>tsdml</code>. Also publishes statistical software on
+          CRAN: <code>QuantileOnQuantile</code>, <code>mqqr</code>, <code>qqkrls</code> and
+          <code>mqqcause</code> — quantile-on-quantile regression, kernel-regularised least
+          squares and causality testing.
+        </p>
+        <div class="chips">
+          <span class="chip"><a href="https://github.com/merwanroudane">🔗 github.com/merwanroudane</a></span>
+          <span class="chip"><a href="mailto:merwanroudane920@gmail.com">✉️ merwanroudane920@gmail.com</a></span>
+          <span class="chip"><a href="https://pypi.org/project/tsdml/">📦 tsdml on PyPI</a></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note note-blue" style="margin-top:28px">
+      <b>Citing this work.</b> The method belongs to Ciganovic, D'Amario and Tancioni — please
+      cite <a href="https://arxiv.org/abs/2603.10999">their paper</a> for the estimator. If the
+      software itself was useful, a citation of the package is welcome too; a
+      <code>CITATION.cff</code> file
+      <a href="https://github.com/merwanroudane/tsdml/blob/main/CITATION.cff">is in the repository</a>.
+      <code>tsdml</code> is an independent open-source implementation, released under the MIT
+      licence.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><strong>tsdml</strong> v0.1.0 — Double Machine Learning for Time Series</p>
+    <p>© 2026 Dr Merwan Roudane · MIT licence ·
+      <a href="https://github.com/merwanroudane/tsdml">GitHub</a> ·
+      <a href="https://pypi.org/project/tsdml/">PyPI</a> ·
+      <a href="https://github.com/merwanroudane/tsdml/blob/main/docs/STEP_BY_STEP_GUIDE.md">Guide</a> ·
+      <a href="https://arxiv.org/abs/2603.10999">Paper</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+function flash(btn, msg){
+  const old = btn.textContent;
+  btn.textContent = msg;
+  setTimeout(()=>{btn.textContent = old;}, 1400);
+}
+function copyTxt(t, btn){
+  navigator.clipboard.writeText(t).then(()=>flash(btn,'Copied ✓')).catch(()=>flash(btn,'Press ⌘C'));
+}
+function copyCode(btn){
+  const code = btn.closest('.code').querySelector('pre').innerText;
+  navigator.clipboard.writeText(code).then(()=>flash(btn,'Copied ✓')).catch(()=>flash(btn,'Press ⌘C'));
+}
+
+/* highlight the section currently in view */
+const links = [...document.querySelectorAll('.nav-links a')];
+const targets = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(!e.isIntersecting) return;
+    links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id));
+  });
+}, {rootMargin:'-45% 0px -50% 0px'});
+targets.forEach(t => obs.observe(t));
+</script>
+</body>
+</html>

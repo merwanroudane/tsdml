@@ -34,6 +34,8 @@ impulse responses of Figure 2. See [Fidelity](#fidelity).
 
 ## 📘 Documentation
 
+> ### 🌐 **[tsdml website — theory, figures, results](https://merwanroudane.github.io/tsdml/)**
+>
 > ### ➡️ **[Read the full step-by-step guide](https://github.com/merwanroudane/tsdml/blob/main/docs/STEP_BY_STEP_GUIDE.md)**
 >
 > A thirteen-step, annotated walkthrough that writes the code with you — from a
@@ -42,6 +44,7 @@ impulse responses of Figure 2. See [Fidelity](#fidelity).
 
 | Document | What it covers |
 |---|---|
+| **[Website](https://merwanroudane.github.io/tsdml/)** | The method, the theory, every figure and results table on one page |
 | **[Step-by-step guide](https://github.com/merwanroudane/tsdml/blob/main/docs/STEP_BY_STEP_GUIDE.md)** | The complete tutorial: shape your data → choose `K` → tune → estimate → diagnose → impulse responses → figures → tables → robustness |
 | [Quickstart script](https://github.com/merwanroudane/tsdml/blob/main/examples/01_quickstart.py) | The five-step workflow in ~80 lines, runnable |
 | [Empirical replication](https://github.com/merwanroudane/tsdml/blob/main/examples/02_empirical_replication.py) | The paper's Section 5 application end to end |

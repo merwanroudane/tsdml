@@ -69,6 +69,7 @@ all = [
 ]
 
 [project.urls]
+Website = "https://merwanroudane.github.io/tsdml/"
 "Step-by-step guide" = "https://github.com/merwanroudane/tsdml/blob/main/docs/STEP_BY_STEP_GUIDE.md"
 Documentation = "https://github.com/merwanroudane/tsdml#readme"
 Examples = "https://github.com/merwanroudane/tsdml/tree/main/examples"

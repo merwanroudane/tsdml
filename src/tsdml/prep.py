@@ -426,6 +426,7 @@ class DataProcessor:
             )
 
         self.original_index = combined.index.copy()
+        self._warn_on_calendar_gaps(self.original_index)
         combined = combined.reset_index(drop=True)
 
         y = combined[y_key].values.reshape(-1)
@@ -442,6 +443,43 @@ class DataProcessor:
         self.data_df = combined.copy()
         self.data_df.index = self.original_index
         return X, y, policy, leads
+
+    # ----------------------------------------------------------- gap check -- #
+
+    @staticmethod
+    def _warn_on_calendar_gaps(index: pd.Index) -> None:
+        """
+        Flag holes in the retained sample.
+
+        Blocks, lags and leads are all built *positionally*, so a missing
+        period is stitched over silently: the observation after a gap is
+        treated as the immediate successor of the one before it, and any lag or
+        lead spanning the gap is wrong. This can come from the source data (an
+        excluded episode), from a series with interior missing values that
+        ``dropna`` removed, or from an irregular date index.
+        """
+        import warnings
+
+        if not isinstance(index, pd.DatetimeIndex) or len(index) < 3:
+            return
+        deltas = np.diff(index.values).astype("timedelta64[D]").astype(float)
+        typical = float(np.median(deltas))
+        if typical <= 0:
+            return
+        breaks = [i for i, dt in enumerate(deltas) if dt > 1.75 * typical]
+        if not breaks:
+            return
+        first = index[breaks[0]].date()
+        after = index[breaks[0] + 1].date()
+        warnings.warn(
+            f"the retained sample is not contiguous: {len(breaks)} calendar "
+            f"break(s), the first between {first} and {after}. Lags and leads "
+            f"are built positionally, so those spanning a break do not "
+            f"correspond to adjacent periods. Check for series with interior "
+            f"missing values (they are dropped row-wise) or an excluded "
+            f"episode in the source data.",
+            stacklevel=3,
+        )
 
     # ---------------------------------------------------------------- scale -- #
 
