@@ -69,10 +69,13 @@ all = [
 ]
 
 [project.urls]
+"Step-by-step guide" = "https://github.com/merwanroudane/tsdml/blob/main/docs/STEP_BY_STEP_GUIDE.md"
+Documentation = "https://github.com/merwanroudane/tsdml#readme"
+Examples = "https://github.com/merwanroudane/tsdml/tree/main/examples"
 Homepage = "https://github.com/merwanroudane/tsdml"
 Repository = "https://github.com/merwanroudane/tsdml"
+Changelog = "https://github.com/merwanroudane/tsdml/blob/main/CHANGELOG.md"
 Issues = "https://github.com/merwanroudane/tsdml/issues"
-Documentation = "https://github.com/merwanroudane/tsdml#readme"
 Paper = "https://arxiv.org/abs/2603.10999"
 
 [tool.setuptools]

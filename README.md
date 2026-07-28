@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/tsdml.svg)](https://pypi.org/project/tsdml/)
 [![Python](https://img.shields.io/pypi/pyversions/tsdml.svg)](https://pypi.org/project/tsdml/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/merwanroudane/tsdml/blob/main/LICENSE)
 
 A complete, faithful Python implementation of
 
@@ -32,8 +32,36 @@ impulse responses of Figure 2. See [Fidelity](#fidelity).
 
 ---
 
+## 📘 Documentation
+
+> ### ➡️ **[Read the full step-by-step guide](https://github.com/merwanroudane/tsdml/blob/main/docs/STEP_BY_STEP_GUIDE.md)**
+>
+> A thirteen-step, annotated walkthrough that writes the code with you — from a
+> raw CSV to a submitted figure. Every argument explained, every choice
+> justified, with a troubleshooting section at the end.
+
+| Document | What it covers |
+|---|---|
+| **[Step-by-step guide](https://github.com/merwanroudane/tsdml/blob/main/docs/STEP_BY_STEP_GUIDE.md)** | The complete tutorial: shape your data → choose `K` → tune → estimate → diagnose → impulse responses → figures → tables → robustness |
+| [Quickstart script](https://github.com/merwanroudane/tsdml/blob/main/examples/01_quickstart.py) | The five-step workflow in ~80 lines, runnable |
+| [Empirical replication](https://github.com/merwanroudane/tsdml/blob/main/examples/02_empirical_replication.py) | The paper's Section 5 application end to end |
+| [Method comparison](https://github.com/merwanroudane/tsdml/blob/main/examples/03_tuning_and_design_comparison.py) | Monte Carlo: Goldilocks vs RMSE, RCF vs NLO |
+| [Changelog](https://github.com/merwanroudane/tsdml/blob/main/CHANGELOG.md) | What is in each release |
+| [Data sources](https://github.com/merwanroudane/tsdml/blob/main/src/tsdml/data/SOURCES.md) | Provenance of the bundled dataset |
+
+In Python, every object carries full numpydoc documentation with runnable
+examples:
+
+```python
+help(tsdml.ReverseCrossFitting)
+help(tsdml.Calibrator)
+```
+
+---
+
 ## Contents
 
+- [Documentation](#-documentation)
 - [Install](#install)
 - [60-second example](#60-second-example)
 - [The method in five minutes](#the-method-in-five-minutes)
@@ -200,7 +228,7 @@ j* = argmin S_j                             pick the most stable good window
 
 Default `S = 3`. `plot_goldilocks_profile` shows you the picture:
 
-<img src="docs/img/goldilocks_profile.png" width="620">
+<img src="https://raw.githubusercontent.com/merwanroudane/tsdml/main/docs/img/goldilocks_profile.png" width="620">
 
 The star is λ\*; the grey triangle is the plain RMSE minimiser. When they
 diverge, the rule is doing something.
@@ -210,16 +238,16 @@ diverge, the rule is doing something.
 ## Step-by-step guide
 
 **A complete, annotated walkthrough — from a raw CSV to a submitted figure — is
-in [`docs/STEP_BY_STEP_GUIDE.md`](docs/STEP_BY_STEP_GUIDE.md).** It writes the
+in [`docs/STEP_BY_STEP_GUIDE.md`](https://github.com/merwanroudane/tsdml/blob/main/docs/STEP_BY_STEP_GUIDE.md).** It writes the
 code with you, line by line, and explains the choice behind each argument.
 
 Runnable scripts:
 
 | Script | What it does | Runtime |
 |---|---|---|
-| [`examples/01_quickstart.py`](examples/01_quickstart.py) | The five-step workflow on simulated data, plus the conditional-stability check firing and not firing | ~30 s |
-| [`examples/02_empirical_replication.py`](examples/02_empirical_replication.py) | The paper's full Section 5 application: five outcomes, Figure 2, LaTeX tables | ~2 min |
-| [`examples/03_tuning_and_design_comparison.py`](examples/03_tuning_and_design_comparison.py) | Monte Carlo: Goldilocks vs RMSE, RCF vs NLO | ~3 min |
+| [`examples/01_quickstart.py`](https://github.com/merwanroudane/tsdml/blob/main/examples/01_quickstart.py) | The five-step workflow on simulated data, plus the conditional-stability check firing and not firing | ~30 s |
+| [`examples/02_empirical_replication.py`](https://github.com/merwanroudane/tsdml/blob/main/examples/02_empirical_replication.py) | The paper's full Section 5 application: five outcomes, Figure 2, LaTeX tables | ~2 min |
+| [`examples/03_tuning_and_design_comparison.py`](https://github.com/merwanroudane/tsdml/blob/main/examples/03_tuning_and_design_comparison.py) | Monte Carlo: Goldilocks vs RMSE, RCF vs NLO | ~3 min |
 
 ---
 
@@ -362,7 +390,7 @@ plot_irf_panel(
 )
 ```
 
-<img src="docs/img/figure2.png" width="820">
+<img src="https://raw.githubusercontent.com/merwanroudane/tsdml/main/docs/img/figure2.png" width="820">
 
 A ragged last row is centred at full panel width rather than stretched — pass
 `equal_widths=False` for the stretched alternative.
@@ -377,7 +405,7 @@ A ragged last row is centred at full panel width rather than stretched — pass
 | `plot_sample_use` | RCF vs NLO sample use across `K` |
 | `plot_residuals` | stage-one residuals with fold boundaries marked |
 
-<img src="docs/img/figure1_blocks.png" width="600">
+<img src="https://raw.githubusercontent.com/merwanroudane/tsdml/main/docs/img/figure1_blocks.png" width="600">
 
 For slides: `use_journal_style(serif=False, base_fontsize=13)`.
 
@@ -548,7 +576,7 @@ spread, PNFC lending and GDP.
 six variables dropped to avoid mechanical collinearity with the policy ratio,
 `num_lags=3`, `H=8`, `n_blocks=6`, the start date, and plotting labels.
 
-See [`src/tsdml/data/SOURCES.md`](src/tsdml/data/SOURCES.md) for provenance and
+See [`src/tsdml/data/SOURCES.md`](https://github.com/merwanroudane/tsdml/blob/main/src/tsdml/data/SOURCES.md) for provenance and
 redistribution notes.
 
 ---
@@ -627,7 +655,7 @@ against it end to end on the paper's own data and specification:
 | Impulse responses, all 5 outcomes, 9 horizons, 90% and 95% bands | identical |
 | Scaled Figure 2 responses | identical |
 
-Regression tests in [`tests/test_paper_replication.py`](tests/test_paper_replication.py)
+Regression tests in [`tests/test_paper_replication.py`](https://github.com/merwanroudane/tsdml/blob/main/tests/test_paper_replication.py)
 pin these values so they cannot drift, including the published GDP path
 (−0.036, −0.100, −0.144 at h = 0, 1, 2) and the qualitative findings of
 Section 5.3.
@@ -705,5 +733,5 @@ Issues and pull requests welcome at
 
 ## License
 
-MIT — see [LICENSE](LICENSE). The method is the authors' of the paper; this is
+MIT — see [LICENSE](https://github.com/merwanroudane/tsdml/blob/main/LICENSE). The method is the authors' of the paper; this is
 an independent open-source implementation.
