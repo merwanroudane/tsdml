@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite both the software and the paper it implements."
+title: "tsdml: Double Machine Learning for Time Series in Python"
+version: 0.1.0
+date-released: 2026-07-28
+license: MIT
+repository-code: "https://github.com/merwanroudane/tsdml"
+url: "https://github.com/merwanroudane/tsdml"
+abstract: >-
+  A Python implementation of Reverse Cross-Fitting Double Machine Learning for
+  macroeconomic time series, with Goldilocks-zone tuning of nuisance
+  hyperparameters, DML local projections, HAC inference, conditional-stability
+  diagnostics and publication-quality figures and tables.
+keywords:
+  - double machine learning
+  - causal inference
+  - time series
+  - cross-fitting
+  - local projections
+  - econometrics
+authors:
+  - family-names: Roudane
+    given-names: Merwan
+    email: merwanroudane920@gmail.com
+references:
+  - type: article
+    title: "Double Machine Learning for Time Series"
+    year: 2026
+    journal: "The Econometrics Journal"
+    notes: "arXiv:2603.10999"
+    authors:
+      - family-names: Ciganovic
+        given-names: Milos
+      - family-names: "D'Amario"
+        given-names: Federico
+      - family-names: Tancioni
+        given-names: Massimiliano

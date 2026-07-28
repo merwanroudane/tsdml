@@ -1,0 +1,105 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tsdml"
+version = "0.1.0"
+description = "Double Machine Learning for time series: Reverse Cross-Fitting, Goldilocks-zone tuning and DML local projections"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Merwan Roudane", email = "merwanroudane920@gmail.com" },
+]
+maintainers = [
+    { name = "Merwan Roudane", email = "merwanroudane920@gmail.com" },
+]
+keywords = [
+    "double machine learning",
+    "causal inference",
+    "time series",
+    "cross-fitting",
+    "local projections",
+    "impulse response",
+    "econometrics",
+    "macroeconomics",
+    "lasso",
+    "HAC",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Typing :: Typed",
+]
+dependencies = [
+    "numpy>=1.22",
+    "pandas>=1.5",
+    "scipy>=1.9",
+    "scikit-learn>=1.1",
+    "statsmodels>=0.13",
+    "matplotlib>=3.5",
+    "joblib>=1.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "build>=1.0",
+    "twine>=4.0",
+    "ruff>=0.4",
+]
+docs = [
+    "tabulate>=0.9",
+]
+all = [
+    "tsdml[dev,docs]",
+]
+
+[project.urls]
+Homepage = "https://github.com/merwanroudane/tsdml"
+Repository = "https://github.com/merwanroudane/tsdml"
+Issues = "https://github.com/merwanroudane/tsdml/issues"
+Documentation = "https://github.com/merwanroudane/tsdml#readme"
+Paper = "https://arxiv.org/abs/2603.10999"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"tsdml.data" = ["*.csv", "*.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "slow: full end-to-end replication of the paper's empirical application",
+]
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::FutureWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501", "E731"]
